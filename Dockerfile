@@ -2,17 +2,17 @@ FROM alpine as builder
 MAINTAINER Daniel Guerra
 
 #meta container, we want fresh builds
- RUN apk update
- RUN apk add alpine-sdk sudo
- RUN addgroup sdk
- RUN adduser  -G sdk -s /bin/sh -D sdk
- RUN echo "sdk:sdk"| /usr/sbin/chpasswd
- RUN echo "sdk    ALL=(ALL) ALL" >> /etc/sudoers
- RUN chmod g+w /var/cache/distfiles/
- RUN sudo addgroup sdk abuild
- USER sdk
- WORKDIR /tmp
- RUN git clone --depth 1 https://gitlab.alpinelinux.org/alpine/aports
+RUN apk update; \
+    apk add alpine-sdk sudo; \
+    addgroup sdk; \
+    adduser  -G sdk -s /bin/sh -D sdk; \
+    echo "sdk:sdk"| /usr/sbin/chpasswd; \
+    echo "sdk    ALL=(ALL) ALL" >> /etc/sudoers; \
+    chmod g+w /var/cache/distfiles/; \
+    sudo addgroup sdk abuild;
+USER sdk
+WORKDIR /tmp
+RUN git clone --depth 1 https://gitlab.alpinelinux.org/alpine/aports
 WORKDIR /home/sdk
 
 RUN abuild-keygen -a -n
@@ -20,33 +20,34 @@ RUN abuild-keygen -a -n
 #RUN abuild checksum
 WORKDIR /tmp/aports
 RUN git pull
+
 WORKDIR /tmp/aports/community/xrdp
-RUN abuild fetch
-RUN abuild unpack
-RUN abuild deps
-RUN abuild prepare
-RUN abuild build
-RUN abuild rootpkg
+RUN abuild fetch; \
+    abuild unpack; \
+    abuild deps; \
+    abuild prepare; \
+    abuild build; \
+    abuild rootpkg;
 
 ARG PULSE_VER="16.1"
 ENV PULSE_VER=${PULSE_VER}
 WORKDIR /tmp/aports/community/pulseaudio
-RUN abuild fetch
-RUN abuild unpack
-RUN abuild deps
-RUN abuild prepare
-RUN abuild build
-RUN abuild rootpkg
+RUN abuild fetch; \
+    abuild unpack; \
+    abuild deps; \
+    abuild prepare; \
+    abuild build; \
+    abuild rootpkg;
 WORKDIR /tmp/aports/community/pulseaudio/src/pulseaudio-"${PULSE_VER}"
 RUN cp ./output/config.h .
 
 WORKDIR /tmp/aports/community/xorgxrdp
-RUN abuild fetch
-RUN abuild unpack
-RUN abuild deps
-RUN abuild prepare
-RUN abuild build
-RUN abuild rootpkg
+RUN abuild fetch; \
+    abuild unpack; \
+    abuild deps; \
+    abuild prepare; \
+    abuild build; \
+    abuild rootpkg;
 
 ARG XRDPPULSE_VER="0.6"
 ENV XRDPPULSE_VER=${XRDPPULSE_VER}
@@ -131,6 +132,7 @@ RUN addgroup alpine \
 # prepare xrdp key
 RUN xrdp-keygen xrdp auto
 
+ADD 999999_001.wav /tone.wav
 EXPOSE 3389 22
 VOLUME ["/etc/ssh"]
 ENTRYPOINT ["/bin/docker-entrypoint.sh"]
